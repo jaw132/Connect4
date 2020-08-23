@@ -1,6 +1,8 @@
+# Define the two players
 Red = "Red"
 Blue = "Blue"
 
+# Initialise the empty 6x7 connect4 grid
 def initial_state():
     return [[None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None],
@@ -36,20 +38,22 @@ def player(board):
 
 
 def winner(board):
-    #check horizontal winner
+    # To determine a winner, each horizontal, vertical and diagonal line has to be checked for a contiguous sequence of 4 colours
+    
+    #check for horizontal winner
     for row in board:
         potentialWinner = longestSubSequence(row)
         if potentialWinner != None:
             return potentialWinner
 
-    #check vertical winner
+    #check for vertical winner
     vertList = splitBoard(board, "vertical")
     for vert in vertList:
         potentialWinner = longestSubSequence(vert)
         if potentialWinner != None:
             return potentialWinner
 
-    #check first diagonal
+    #check for diagonal winner
     diagonalList = splitBoard(board, "diagonal")
     for diag in diagonalList:
         potentialWinner = longestSubSequence(diag)
@@ -58,6 +62,8 @@ def winner(board):
 
     return None
 
+# Split the board into its component rows/columns based on the parameter
+# e.g. if vertical is passed then a list of all the columns is returned
 def splitBoard(board, type):
     splitList = []
     if type == "vertical":
@@ -79,7 +85,7 @@ def splitBoard(board, type):
 
     return splitList
 
-
+# Checks if index is on the grid
 def valid(seq):
     return 0 <= seq[0] <= 5 and 0 <= seq[1] <= 6
 
@@ -100,7 +106,6 @@ def longestSubSequence(seq):
         else:
             redSequence, blueSequence = 0, 0
 
-
     return None
 
 
@@ -111,6 +116,7 @@ def result(board, action):
     if action not in range(7):
         raise Exception("illegal action")
 
+    # initailise new board as to not overwrite current state, will be important as the minimax algorithm is called recursively
     new_board = initial_state()
 
     for row in range(6):
@@ -129,7 +135,7 @@ def result(board, action):
 
     return new_board
 
-
+# Returns the set of possible moves for the current player
 def possibleMoves(board):
     moveSet = set()
 
@@ -142,13 +148,17 @@ def possibleMoves(board):
 
     return moveSet
 
+# Non linear utility function that determines the current state of a given board, a positive value indicates the red player has the 
+# advantage and a negative value the blue player.
 def utility(board):
 
+    # If a player wins then assign a high value of 20
     if terminal(board) and winner(board) == Red:
         return 20
     if terminal(board) and winner(board) == Blue:
         return -20
 
+    # Loop over all vertical, horizontal and diagonal subsequence and find the longest subsequence for each player
     longestBlue, longestRed = 0, 0
 
     for row in board:
@@ -177,9 +187,12 @@ def utility(board):
         if curr_blue > longestBlue:
             longestBlue = curr_blue
 
+    ''' Return the longest red sequence squared minus the longest blue sequence squared, this flags up dangerous longer sequences
+    e.g. 3^2-2^2 = 5 whereas 2^2-1^2 = 3, even though in both cases the difference in sequence length is one, the blue player will realise
+    the first case is a worse position to be in'''
     return (longestRed**2)-(longestBlue**2)
 
-
+# Finds longest subsequence for passed color
 def subsequence(seq, color):
     max_length, curr_length = 0, 0
 
@@ -193,6 +206,7 @@ def subsequence(seq, color):
 
     return max_length
 
+# Returns the optimal move for the AI to make 
 def AIalgo(board):
 
     if terminal(board):
@@ -215,6 +229,7 @@ def AIalgo(board):
     else:
         current_max = -100
         max_move = 0
+        
         #run max_value on actions
         for move in possibleMoves(board):
             new_board = result(board, move)
@@ -227,7 +242,7 @@ def AIalgo(board):
 
 
 
-
+# Returns the minimum utility of the possible moves assuming the opponent will chose the maximum
 def min_value(board, depth):
     if terminal(board):
         utility(board)
@@ -245,7 +260,7 @@ def min_value(board, depth):
 
     return v
 
-
+# Returns the maximum utility of the possible moves assuming the opponent will chose the minimum
 def max_value(board, depth):
     if terminal(board):
         utility(board)
