@@ -1,7 +1,8 @@
+'''This layout is inspired by CS50 AI project 0 - https://cs50.harvard.edu/ai/2020/projects/0/tictactoe/ '''
+
 import sys
 import time
 import pygame
-
 import cs50.connect4.connect as con
 
 pygame.init()
@@ -15,23 +16,15 @@ blue = (0, 0, 255)
 
 screen = pygame.display.set_mode(size)
 
+# Set fonts
 mediumFont = pygame.font.Font("OpenSans-Regular.ttf", 28)
 largeFont = pygame.font.Font("OpenSans-Regular.ttf", 40)
 
-
+# Initialise empty board and no user
 user = None
 board = con.initial_state()
 ai_turn = False
 
-
-test = [[None, None, None, None, None, None, None],
-        [None, None, None, None, None, None, None],
-        ["Red", None, None, None, None, None, None],
-        [None, None, None, None, None, None, None],
-        [None, None, "Red", None, None, None, None],
-        [None, None, None, "Red", None, None, None]]
-
-print(con.splitBoard(test, "diagonal"))
 
 while True:
     for event in pygame.event.get():
@@ -40,6 +33,8 @@ while True:
 
     screen.fill(white)
 
+    
+    #The start screen
     if user is None:
 
         # Draw title
@@ -63,7 +58,7 @@ while True:
         pygame.draw.rect(screen, white, playAsBlueButton)
         screen.blit(playBlue, playBlueRect)
 
-        # Check if button is clicked
+        # Check if button is clicked and set user
         click, _, _ = pygame.mouse.get_pressed()
         if click == 1:
             mouse = pygame.mouse.get_pos()
@@ -73,12 +68,13 @@ while True:
             elif playAsBlueButton.collidepoint(mouse):
                 time.sleep(0.2)
                 user = con.Blue
+    #Once a user (red or blue) is selected enter the game interface
     else:
         slot_size = 80
         slot_origin = (width / 2 - (3.5 * slot_size),
                        height / 2 - (3 * slot_size))
         slots = []
-
+        #Draw the 6x7 connect4 grid and fill with the appropriate colour
         for i in range(6):
             row = []
             for j in range(7):
@@ -96,10 +92,12 @@ while True:
                 row.append(rect)
             slots.append(row)
 
+        #Check if the game is over and get which player's turn it is
         game_over = con.terminal(board)
         player = con.player(board)
 
-
+        
+        #Print to the screen whether the game has ended or current players turn
         if game_over:
             winner = con.winner(board)
             if winner is None:
@@ -115,6 +113,7 @@ while True:
         titleRect.center = ((width / 2), 30)
         screen.blit(title, titleRect)
 
+        # Check if it's the AI's move and call the minimax algo from connect.py
         if user != player and not game_over:
             if ai_turn:
                 time.sleep(0.5)
@@ -124,7 +123,7 @@ while True:
             else:
                 ai_turn = True
 
-        # Check for a user move
+        # Check for a user move and update the board accordingly
         click, _, _ = pygame.mouse.get_pressed()
         if click == 1 and user == player and not game_over:
             mouse = pygame.mouse.get_pos()
@@ -132,7 +131,8 @@ while True:
                 for j in range(7):
                     if (board[i][j] == None and slots[i][j].collidepoint(mouse)):
                         board = con.result(board, j)
-
+                       
+        # If the game is over display a play again button and reset the game
         if game_over:
             againButton = pygame.Rect(width / 3, height - 55, width / 3, 50)
             again = mediumFont.render("Play Again", True, white)
